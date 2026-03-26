@@ -1,16 +1,18 @@
-# from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse, Http404
+from .models import Question
 
-def HomePageView(request):
-    return HttpResponse("""
-<h1>Hi!</h1>
-                        
-<p>This is my website that I'm building</p>
-                        
-<p>The idea is the learn sum djangky skillz</p>""")
+def Index(request):
+    question_list = Question.objects.order_by('-pub_date')[:5]
+    context = { "question_list": question_list }
+    return render(request, "pages/index.html", context)
 
-def PingView(request):
-    return HttpResponse('You pinged the server')
+def detail(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, "pages/detail.html", { "question": question })
 
-def TestView(request):
-    return HttpResponse('Testing how routes work')
+def results(request, question_id):
+    return HttpResponse(f"You're looking at the results of question {question_id}.")
+
+def vote(request, question_id):
+    return HttpResponse(f"You're voting on question {question_id}.")
