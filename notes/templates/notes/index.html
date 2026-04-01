@@ -1,0 +1,30 @@
+<h1>Index</h1>
+
+<form action="logout/" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="Logout"/>
+</form>
+
+<p>
+    username: {{ user }}
+</p>
+
+
+
+<h2>Notes</h2>
+    {% for note in notes %}
+
+        <p>
+            Owner: {{ note.owner }}
+        </p>
+        <p>
+            Note: <a href="notes/{{ note.pk }}" >{{ note.content }}</a>
+        </p>
+    {% endfor %}
+
+<h2>New note</h2>
+<form action="add/" method="post" >
+    {% csrf_token %}
+    <input type="text" name="content"/><br/>
+    <input type="submit" value="Create"/>
+</form>

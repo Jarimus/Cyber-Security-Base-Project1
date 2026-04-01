@@ -1,5 +1,5 @@
 """
-URL configuration for secbaseproject project.
+URL configuration for SecBaseProject project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/6.0/topics/http/urls/
@@ -16,8 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth.views import LoginView, LogoutView
 
 urlpatterns = [
-    path('', include('pages.urls')),
+    path('', include('notes.urls')),
+    path('login/', LoginView.as_view(template_name='notes/login.html'), name='login'),
+    path('logout/', LogoutView.as_view(next_page='/'), name='logout'),
     path('admin/', admin.site.urls),
 ]
