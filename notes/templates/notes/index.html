@@ -1,14 +1,19 @@
-<h1>Index</h1>
+<h1>{{ user }}'s notes</h1>
 
 <form action="logout/" method="POST">
     {% csrf_token %}
     <input type="submit" value="Logout"/>
 </form>
 
-<p>
-    username: {{ user }}
-</p>
 
+<h2>
+    Search notes
+</h2>
+<form action="/" method="GET">
+    {% csrf_token %}
+    <input type="text" name="search_term" id="search_term">
+    <input type="submit" value="Search">
+</form>
 
 
 <h2>Notes</h2>
@@ -22,9 +27,10 @@
         </p>
     {% endfor %}
 
+
 <h2>New note</h2>
 <form action="add/" method="post" >
     {% csrf_token %}
-    <input type="text" name="content"/><br/>
+    <input type="text" name="content"/>
     <input type="submit" value="Create"/>
 </form>

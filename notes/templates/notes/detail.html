@@ -4,5 +4,9 @@
     Owner: {{ owner }}
 </p>
 <p>
-    Content: {{ note.content }}
+
+    <!-- FLAW 4: Stored XSS (user input can create scripts that clients execute while browsing) -->
+    Content: {{ note.content|safe }}
+<!--     FIX FLAW 4: Do not use |safe with note.content.
+    Content: {{ note.content}} -->
 </p>

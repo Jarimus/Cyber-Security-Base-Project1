@@ -1,13 +1,31 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponseRedirect
+from django.contrib.auth.models import User
+from django.http import HttpRequest, HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse
+from django.db import connection
 from .models import Note
-from . import views
+
 
 @login_required(login_url='/login')
 def index(request: HttpRequest):
-    notes = Note.objects.filter(owner=request.user)
+    search_term = request.GET.get("search_term", "")
+    user = request.user
+
+    # FIX FLAW 1: Comment out this query (7 lines)
+    with connection.cursor() as cursor:
+        cursor.execute(f"""
+SELECT a.username, n.content, n.id FROM notes_note n
+    LEFT JOIN auth_user a ON a.id = n.owner_id
+WHERE n.content LIKE '%{search_term}%' AND a.username = '{user}';""")
+        results = cursor.fetchall()
+        notes = [ {"owner": r[0], "content": r[1], "pk": r[2]} for r in results ]
+
+    # FIX FLAW 1: Include this query with the search term
+    # notes = Note.objects.filter(owner=request.user)
+    # if search_term != "":
+    #     notes = notes.filter(content__contains=search_term)
+
     return render(
         request, 
         template_name='notes/index.html',
@@ -17,16 +35,44 @@ def index(request: HttpRequest):
         }
         )
 
+
+
 @login_required(login_url='/login')
 def add(request: HttpRequest):
-    # if HttpRequest.method == 'POST':
     content = request.POST.get('content', '')
     if content != '':
         Note.objects.create(owner=request.user, content=content)
     
-    return HttpResponseRedirect(reverse(views.index))
+    return HttpResponseRedirect(reverse(index))
 
-@login_required(login_url='/login')
+
+
+# FIX FLAW 2: Include the decorator
+# @login_required(login_url='/login')
 def detail(request: HttpRequest, note_id: str):
+
     note = Note.objects.get(pk=note_id)
-    return render(request=request, template_name='notes/detail.html', context={"note": note, "owner": request.user})
+
+    if request.method == "DELETE":
+        note.delete()
+        return HttpResponseRedirect(redirect_to='/')
+
+    # FIX FLAW 2: Include this to ensure the logged in user is the owner of the note.
+    # if note.owner != request.user:
+    #     return HttpResponseForbidden()
+    return render(request=request, template_name='notes/detail.html', context={"note": note, "owner": note.owner})
+
+
+
+def register(request: HttpRequest):
+    if request.method != "POST":
+        return render(request=request, template_name='notes/register.html', context={})
+    username = request.POST.get("username", "")
+    password1 = request.POST.get("password", "")
+    password2 = request.POST.get("confirm_password", "")
+    if username == "" or password1 == "" or password2 == "":
+        return render(request=request, template_name='notes/register.html', context={"error_message": "Please provide a username and a password."})
+    if password1 != password2:
+        return render(request=request, template_name='notes/register.html', context={"error_message": "Passwords did not match."})
+    User.objects.create_user(username=username, password=password1)
+    return HttpResponseRedirect(redirect_to="/")
