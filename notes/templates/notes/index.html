@@ -25,7 +25,15 @@
         <p>
             Note: <a href="notes/{{ note.pk }}" >{{ note.content }}</a>
         </p>
+        <p>
+            <a href="notes/{{ note.pk }}/delete">Delete note</a>
+        </p>
     {% endfor %}
+    {% if not notes %}
+        <p>
+            No notes yet.
+        </p>
+    {% endif %}
 
 
 <h2>New note</h2>

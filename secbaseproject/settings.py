@@ -16,6 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-pfol_7ezm3$(rvc!^20lhll=@ovdqy)3ovqkr+@kul%+65h1*h'
 
+# FLAW 5: Debug more is on. Too much information is sent to the client.
 DEBUG = True
 # FIX FLAW 5: Turn off debug mode, and uncomment allowed hosts
 # DEBUG = False

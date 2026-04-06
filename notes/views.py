@@ -12,7 +12,7 @@ def index(request: HttpRequest):
     search_term = request.GET.get("search_term", "")
     user = request.user
 
-    # FIX FLAW 1: Comment out this query (7 lines)
+    # FIX FLAW 1: Comment out this query (lines 16-22)
     with connection.cursor() as cursor:
         cursor.execute(f"""
 SELECT a.username, n.content, n.id FROM notes_note n
@@ -21,7 +21,7 @@ WHERE n.content LIKE '%{search_term}%' AND a.username = '{user}';""")
         results = cursor.fetchall()
         notes = [ {"owner": r[0], "content": r[1], "pk": r[2]} for r in results ]
 
-    # FIX FLAW 1: Include this query with the search term
+    # FIX FLAW 1: Include this query with the search term (lines 25-27)
     # notes = Note.objects.filter(owner=request.user)
     # if search_term != "":
     #     notes = notes.filter(content__contains=search_term)
@@ -46,8 +46,18 @@ def add(request: HttpRequest):
     return HttpResponseRedirect(reverse(index))
 
 
+@login_required(login_url='/login')
+def delete(request: HttpRequest, note_id: str):
+    note = Note.objects.get(pk=note_id)
+    if note.owner == request.user:
+        note.delete()
+        return HttpResponseRedirect(reverse(index))
+    else:
+        return HttpResponseForbidden()
 
-# FIX FLAW 2: Include the decorator
+
+# FLAW 2: Login is not required to access certain pages
+# FLAW 2 FIX: Include the @login_required decorator
 # @login_required(login_url='/login')
 def detail(request: HttpRequest, note_id: str):
 
